@@ -17,6 +17,8 @@ import com.mongodb.client.FindIterable;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoIterable;
+import com.mongodb.client.model.Filters;
+import com.mongodb.client.model.Updates;
 
 public class localMongo {
 		
@@ -136,6 +138,16 @@ public void listMongo(){
 				push(
 						arrayFieldToPush,
 						objectToPush)					
+		);		
+	}
+	
+	public static Document findByIdAndClearArray(MongoCollection<org.bson.Document> collect, org.bson.Document existingMongoDoc, String arrayField){
+		return collect.findOneAndUpdate(
+				eq(
+						"_id",
+						existingMongoDoc.getObjectId("_id")),
+				Updates.pullByFilter(
+						Filters.exists(arrayField))										
 		);		
 	}
 	

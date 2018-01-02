@@ -38,8 +38,16 @@ public class ReportReviews {
 		Block<Document> idGetter = (Document d) -> {
 			Document docTo = new Document();		
 			d.forEach((sKey,vObj) ->{
-				if(!sKey.contains("HTML")){
+				String ski = sKey; 
+				if(!sKey.contains("HTML") && !sKey.contains("reviews")){
 					docTo.append(sKey, d.get(sKey));
+				}
+				if(ski.contains("reviews")){
+					@SuppressWarnings("unchecked")
+					ArrayList<Document> rArray = d.get("reviews", ArrayList.class);
+					if(rArray.size() > 0){
+						docTo.append("ArrayHTML", rArray.get(0).getString("rawHTML").length());
+					}
 				}
 			});			
 			docCount++;

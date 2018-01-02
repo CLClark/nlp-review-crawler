@@ -122,7 +122,7 @@ public class PageGetter {
 		org.jsoup.Connection concoction = Jsoup.connect(hyperlink)	
 //			.header("host", "")
 			.headers(headHand.giveHeader())
-			.timeout(8000);		
+			.timeout(12000);		
 		if(ref != true){
 			try {
 		doc = concoction.get();

@@ -61,8 +61,18 @@ public class ReviewRequester {
 		//check if "reviews"array exists in mongo doc -- prevent nullpointer e
 		if(d.containsKey("reviews")){
 			reviewsArray.addAll(d.get("reviews", ArrayList.class));
+			if(!reviewsArray.isEmpty()){
+				//check if the first review obj is longer than 10,000 chars
+				if(reviewsArray.get(0).getString("rawHTML").length() < 10000){
+					Document updated = localMongo.findByIdAndClearArray(collectMongo, d, "reviews");
+					reviewsArray.clear();
+					reviewsArray.addAll(updated.get("reviews", ArrayList.class));
+				}
+			}else{
+				System.out.println("empty : review array");
+			}
 		}			
-		System.out.println(reviewsArray.size() + "    : reviews :  " + reviewLink);
+		System.out.println(reviewsArray.size() + "    : reviews :  " + reviewLink);		
 		if(reviewLink.contains("http") && reviewsArray.isEmpty()){
 			org.jsoup.nodes.Document
 			//get the review link from the mongo doc
@@ -70,23 +80,23 @@ public class ReviewRequester {
 					PageGetter.requestOne( reviewLink, hh, false);
 			//check if response document is not a "timeout" doc
 			if(singleReq.baseUri().contains("http")){
-			Document docTo = new Document();
-			Date now = new Date();			BasicDBObject serverTime = new BasicDBObject("date", now);
-			docTo
-				.append("uri", reviewLink)
-				.append("datePulled", now.toString())
-				.append("dboDate", serverTime.get("date"))
-				.append("docType", "REVIEW")
-				.append("rawHTML",singleReq.toString())
-				.append("request", hh.resps().get("request"))
-				.append("response",hh.resps().get("response"))
-				;				
-			//find and update
-			localMongo.findByIdAndPush(collectMongo, d, "reviews", docTo);
-			ArrayList<Document> listCheck  = collectMongo.find(eq("_id", d.getObjectId("_id"))).first()
-			.get("reviews", ArrayList.class);
-			System.out.println(listCheck.size() + " : reviews found in updated doc : html length = " + listCheck.get(0).getString("rawHTML").length());
-			docCount++;	
+				Document docTo = new Document();
+				Date now = new Date();			BasicDBObject serverTime = new BasicDBObject("date", now);
+				docTo
+					.append("uri", reviewLink)
+					.append("datePulled", now.toString())
+					.append("dboDate", serverTime.get("date"))
+					.append("docType", "REVIEW")
+					.append("rawHTML",singleReq.toString())
+					.append("request", hh.resps().get("request"))
+					.append("response",hh.resps().get("response"))
+					;				
+				//find and update
+				localMongo.findByIdAndPush(collectMongo, d, "reviews", docTo);
+				ArrayList<Document> listCheck  = collectMongo.find(eq("_id", d.getObjectId("_id"))).first()
+				.get("reviews", ArrayList.class);
+				System.out.println(listCheck.size() + " : reviews found in updated doc : html length = " + listCheck.get(0).getString("rawHTML").length());
+				docCount++;	
 			//check timeout doc
 			} else {
 				timeoutReqs.add(reviewLink);
